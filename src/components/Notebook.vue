@@ -2,7 +2,7 @@
   <div id="notebook">
     <aside class="side-bar">
       <div class="toolbar">
-        <button @click="addNote" :title="notes.length + ' note(s) already'"><i class="material-icons">+ </i> Add note</button>
+        <button @click="addNote" :title="notes.length + ' note(s) already'"><i class="material-icons">add </i> Add note</button>
       </div>
       <div class="notes">
         <div class="note" v-for="note of sortedNotes" :class="{selected: note === selectedNote}" @click="selectNote(note)"><i class="icon material-icons" v-if="note.favorite">star</i>{{note.title}}</div>
@@ -183,7 +183,7 @@ body {
 }
 
 .note:hover {
-  background: #ade2ca;
+  background: #efd59b;
 }
 
 .note .icon {
@@ -202,7 +202,7 @@ textarea {
 
 button,
 .note.selected {
-  background: #40b883;
+  background: #5c5b60;
   color: white;
 }
 
@@ -215,11 +215,11 @@ button {
 }
 
 button:hover {
-  background: #63c89b;
+  background: #bc0d90;
 }
 
 input {
-  border: solid 2px #ade2ca;
+  border: solid 2px #efd59b;
   border-radius: 3px;
   padding: 6px 10px;
   background: #f0f9f5;
@@ -227,7 +227,7 @@ input {
 }
 
 input:focus {
-  border-color: #40b883;
+  border-color: #5c5b60;
   background: white;
   color: black;
 }
@@ -283,14 +283,14 @@ textarea, .notes, .preview {
 }
 
 a {
-  color: #40b883;
+  color: #5c5b60;
 }
 
 h1,
 h2,
 h3 {
   margin: 10px 0 4px;
-  color: #40b883;
+  color: #5c5b60;
 }
 
 h1 {
