@@ -6,6 +6,7 @@ import router from './router';
 
 Vue.config.productionTip = false;
 
+Vue.filter('date', time => moment(time).format('DD/MM/YY, HH:mm'))
 /* eslint-disable no-new */
 new Vue({
   el: '#app',

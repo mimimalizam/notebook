@@ -2,66 +2,145 @@
   <div id="notebook">
     <aside class="side-bar">
       <div class="toolbar">
-        <button @click="addNote"><i class="material-icons">+ </i>
-        Add note</button>
+        <button @click="addNote" :title="notes.length + ' note(s) already'"><i class="material-icons">+ </i> Add note</button>
       </div>
       <div class="notes">
-        <div class="note" v-for="note in notes" @click="selectNote(note)">
-          {{note.title}}
-        </div>
+        <div class="note" v-for="note of sortedNotes" :class="{selected: note === selectedNote}" @click="selectNote(note)"><i class="icon material-icons" v-if="note.favorite">star</i>{{note.title}}</div>
       </div>
     </aside>
 
-    <section class="main">
-      <textarea v-model="selectedNote.content"></textarea>
-    </section>
+    <template v-if="selectedNote">
 
-    <aside class="preview" v-html="notePreview">
-    </aside>
+      <!-- Main pane -->
+      <section class="main">
+        <div class="toolbar">
+          <input v-model="selectedNote.title" placeholder="Note title" />
+
+          <button @click="favoriteNote" title="Favorite note"><i class="material-icons">{{ selectedNote.favorite ? 'star' : 'star_border' }}</i></button>
+
+          <button @click="removeNote" title="Remove note"><i class="material-icons">delete</i></button>
+        </div>
+        <textarea v-model="selectedNote.content"></textarea>
+        <div class="toolbar status-bar">
+          <span class="date">
+            <span class="label">Created</span>
+            <span class="value">{{ selectedNote.created | date }}</span>
+          </span>
+          <span class="lines">
+            <span class="label">Lines</span>
+            <span class="value">{{ linesCount }}</span>
+          </span>
+          <span class="words">
+            <span class="label">Words</span>
+            <span class="value">{{ wordsCount }}</span>
+          </span>
+          <span class="characters">
+            <span class="label">Characters</span>
+            <span class="value">{{ charactersCount }}</span>
+          </span>
+        </div>
+      </section>
+
+      <aside class="preview" v-html="notePreview">
+      </aside>
+      </template>
   </div>
 </template>
 
 <script>
 export default {
   name: 'Notebook',
-  data() {
+  data () {
     return {
-      content: 'just placeholder',
-      notes: [],
-      selectedId: null,
-    };
+      notes: JSON.parse(localStorage.getItem('notes')) || [],
+      selectedId: localStorage.getItem('selected-id') || null,
+    }
   },
 
   computed: {
-    notePreview () {
-      return this.selectedNote ? marked(this.selectedNote.content) : ''
-    },
     selectedNote () {
       return this.notes.find(note => note.id === this.selectedId)
     },
+
+    notePreview () {
+      return this.selectedNote ? marked(this.selectedNote.content) : ''
+    },
+
+    sortedNotes () {
+      return this.notes.slice().sort((a, b) => a.created - b.created)
+      .sort((a, b) => (a.favorite === b.favorite)? 0 : a.favorite? -1 : 1)
+    },
+
+    linesCount () {
+      if (this.selectedNote) {
+        return this.selectedNote.content.split(/\r\n|\r|\n/).length
+      }
+    },
+
+    wordsCount () {
+      if (this.selectedNote) {
+        var s = this.selectedNote.content
+        s = s.replace(/\n/g, ' ')
+        s = s.replace(/(^\s*)|(\s*$)/gi, '')
+        s = s.replace(/[ ]{2,}/gi, ' ')
+        return s.split(' ').length
+      }
+    },
+
+    charactersCount () {
+      if (this.selectedNote) {
+        return this.selectedNote.content.split('').length
+      }
+    },
   },
 
-  methods: {
+  watch: {
+    notes: {
+      handler: 'saveNotes',
+      deep: true,
+    },
+    selectedId (val, oldVal) {
+      localStorage.setItem('selected-id', val)
+    },
+  },
+
+  methods:{
     addNote () {
       const time = Date.now()
       const note = {
         id: String(time),
-        title: 'New note ' + (this.notes.length +1),
-        content: '**Hi!** This notebook is using [markdown](https://github.com/adam-p/markdown-here/Markdown-Cheatsheet) for formatting!',
+        title: 'New note ' + (this.notes.length + 1),
+        content: '**Hi!** This notebook is using [markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet) for formatting!',
         created: time,
-        favourite: false,
+        favorite: false,
       }
       this.notes.push(note)
+      this.selectNote(note)
     },
+
+    removeNote () {
+      if (this.selectedNote && confirm('Delete the note?')) {
+        const index = this.notes.indexOf(this.selectedNote)
+        if (index !== -1) {
+          this.notes.splice(index, 1)
+        }
+      }
+    },
+
     selectNote (note) {
       this.selectedId = note.id
     },
-  },
 
-  created() {
-    this.content = localStorage.getItem('content') || 'You can write in **markdown**'
+    saveNotes () {
+      localStorage.setItem('notes', JSON.stringify(this.notes))
+      console.log('Notes saved!', new Date())
+    },
+
+    favoriteNote () {
+      this.selectedNote.favorite ^= true
+    },
   }
-};
+}
 </script>
 
 <style scoped>
