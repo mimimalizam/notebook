@@ -2,16 +2,18 @@
   <div id="notebook">
     <aside class="side-bar">
       <div class="toolbar">
-        <button v-on:click="addNote"><i class="material-icons">+ </i>
+        <button @click="addNote"><i class="material-icons">+ </i>
         Add note</button>
       </div>
       <div class="notes">
-        <div class="note" v-for="note in notes">{{note.title}}</div>
+        <div class="note" v-for="note in notes" @click="selectNote(note)">
+          {{note.title}}
+        </div>
       </div>
     </aside>
 
     <section class="main">
-      <textarea v-model="content"></textarea>
+      <textarea v-model="selectedNote.content"></textarea>
     </section>
 
     <aside class="preview" v-html="notePreview">
@@ -24,22 +26,22 @@ export default {
   name: 'Notebook',
   data() {
     return {
-      content: 'This is a note.',
+      content: 'just placeholder',
       notes: [],
+      selectedId: null,
     };
   },
 
   computed: {
     notePreview () {
-      return marked(this.content)
+      return this.selectedNote ? marked(this.selectedNote.content) : ''
+    },
+    selectedNote () {
+      return this.notes.find(note => note.id === this.selectedId)
     },
   },
 
   methods: {
-    saveNote () {
-      console.log('saving note:', this.content)
-      localStorage.setItem("content", this.content)
-    },
     addNote () {
       const time = Date.now()
       const note = {
@@ -51,11 +53,8 @@ export default {
       }
       this.notes.push(note)
     },
-  },
-
-  watch: {
-    content: {
-      handler: 'saveNote',
+    selectNote (note) {
+      this.selectedId = note.id
     },
   },
 
@@ -65,7 +64,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 body {
   font-family: sans-serif;
   font-size: 16px;
